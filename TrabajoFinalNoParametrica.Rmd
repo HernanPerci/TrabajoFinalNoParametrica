@@ -1,0 +1,90 @@
+---
+title: "Pruebas no parametricas aplicadas a un registro de mazorcas en el Peru"
+author: Nuñez Palomino Hernan Perci - Lopez Vega Arturo Emerson - Valverde Shuan keyla
+  Fiorela
+date: "18/9/2020"
+output: word_document
+---
+
+## Objetivo
+
+Aplicación de las pruebas no paramétricas en la agricultura en el Perú.
+
+## Descripción de la base de datos
+Se recogen informaciones sobre las plantas de maíz  producidas en un área de cultivo para realizar estudios sobre su producción y crecimiento.
+Se recopilo el tipo de abono, peso de la mazorca y altura de la mazorca con el fin de encontrar relaciones entre la producción con estas variables. 
+
+## Población
+La población son todas las plantas de maíz producida de un área de cultivo en el Perú
+
+## Muestra
+Es una muestra no probabilística.
+
+## Unidad de análisis
+Cada planta de maíz producida de un área de cultivo en el Perú
+
+## Variables y escalas de medición
+Variables                               | Escala de medicion | Valores
+--------------------------------------- | ------------------ | -------
+Tipo de abono                           |	nominal
+Altura de mazorca                       |	razon
+Peso de la mazorca con el uso del abono |	razon
+Peso de la mazorca sin el uso del abono |	razon
+grupo antes del tratamiento             | ordinal
+grupo despues del tratamiento           | ordinal
+eficiencia del tratamiento              | ordinal
+
+## Librerias usadas
+
+
+```{r, message=FALSE, warning=FALSE}
+
+library(readxl)
+library(tidyverse)
+library(agricolae)
+library(exactRankTests)
+
+```
+
+
+## Base de datos
+
+
+```{r}
+
+Mazorca <- read_excel("Data_Mazorca.xlsx")
+
+for (i in c(1,2,6,7,8,9)) {
+  Mazorca[[i]] <- factor(Mazorca[[i]])
+  if (i == 6) {
+    Mazorca[[i]] <- factor(Mazorca[[i]], levels = c("Inicial", "Final"), ordered = TRUE)
+  }
+  if (i == 7) {
+    Mazorca[[i]] <- factor(Mazorca[[i]], levels = c("Bajo", "Alto"), ordered = TRUE)
+    }
+  if (i == 8) {
+    Mazorca[[i]] <- factor(Mazorca[[i]], levels = c("NoEficiente", "Eficiente"), ordered = TRUE)
+    }
+  if (i == 9) {
+    Mazorca[[i]] <- factor(Mazorca[[i]], levels = c("Deficiente", "Aceptable", "Regular", "Bueno", "MuyBueno"), ordered = TRUE)
+  }
+  }
+
+for (j in c(3,4,5)) {
+  Mazorca[[j]] <- round(Mazorca[[j]], digits = 1)
+}
+
+
+ResumenInicial <- function()
+{
+  Mazorca <- Mazorca %>%
+    filter(Proceso == "Inicial")
+  
+  glimpse(Mazorca)
+  summary(Mazorca)
+}
+
+ResumenInicial()
+
+```
+
