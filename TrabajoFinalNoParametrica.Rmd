@@ -24,16 +24,25 @@ Es una muestra no probabilística.
 Cada planta de maíz producida de un área de cultivo en el Perú
 
 ## Variables y escalas de medición
-Variables                               | Escala de medicion | Valores
---------------------------------------- | ------------------ | -------
-Tipo de abono                           |	nominal
-Altura de mazorca                       |	razon
-Peso de la mazorca con el uso del abono |	razon
-Peso de la mazorca sin el uso del abono |	razon
-grupo antes del tratamiento             | ordinal
-grupo despues del tratamiento           | ordinal
-eficiencia del tratamiento              | ordinal
-
+Variable           | Etiqueta                        | Escala  | Valores
+------------------ | ------------------------------- | ------- | ----------------
+ID_MZ              | Identificacion de la mazorca    | nominal | .
+T_A                | Tipo de abono                   | nominal | .
+AL_MZ              | Altura de la mazorca            | razon   | .
+LA_MZ              | Largo de la mazorca             | razon   | .
+PE_MZ              | Peso de la mazorca              | razon   | .
+ET                 | Etapa de la evaluacion          | ordinal | I: Inicial
+.                  | .                               | .       | F: Final  
+CA_PE              | Calidad del peso                | ordinal | B: Bajo
+.                  | .                               | .       | A: Alto  
+EF                 | eficiencia a/d del tratamiento  | ordinal | NE: No Eficiente
+.                  | .                               | .       | E: Eficiente  
+CAL_FI             | Calificacion final de la mazorca| ordinal | 1: Deficiente
+.                  | .                               | .       | 2: Aceptable
+.                  | .                               | .       | 3: Regular
+.                  | .                               | .       | 4: Bueno
+.                  | .                               | .       | 5: Muy Bueno  
+                   
 ## Librerias usadas
 
 
@@ -43,6 +52,8 @@ library(readxl)
 library(tidyverse)
 library(agricolae)
 library(exactRankTests)
+library(GGally)
+library(skimr)
 
 ```
 
@@ -52,39 +63,89 @@ library(exactRankTests)
 
 ```{r}
 
-Mazorca <- read_excel("Data_Mazorca.xlsx")
+MZ <- read_excel("Data_Mazorca.xlsx")
 
 for (i in c(1,2,6,7,8,9)) {
-  Mazorca[[i]] <- factor(Mazorca[[i]])
+  MZ[[i]] <- factor(MZ[[i]])
   if (i == 6) {
-    Mazorca[[i]] <- factor(Mazorca[[i]], levels = c("Inicial", "Final"), ordered = TRUE)
+    MZ[[i]] <- factor(MZ[[i]], labels = c("I", "F"), levels = c("Inicial", "Final"), ordered = TRUE)
   }
   if (i == 7) {
-    Mazorca[[i]] <- factor(Mazorca[[i]], levels = c("Bajo", "Alto"), ordered = TRUE)
+    MZ[[i]] <- factor(MZ[[i]], labels = c("B", "A"), levels = c("Bajo", "Alto"), ordered = TRUE)
     }
   if (i == 8) {
-    Mazorca[[i]] <- factor(Mazorca[[i]], levels = c("NoEficiente", "Eficiente"), ordered = TRUE)
+    MZ[[i]] <- factor(MZ[[i]], labels = c("NE", "E"), levels = c("NoEficiente", "Eficiente"), ordered = TRUE)
     }
   if (i == 9) {
-    Mazorca[[i]] <- factor(Mazorca[[i]], levels = c("Deficiente", "Aceptable", "Regular", "Bueno", "MuyBueno"), ordered = TRUE)
+    MZ[[i]] <- factor(MZ[[i]], labels = c("1", "2", "3", "4", "5"), levels = c("Deficiente", "Aceptable", "Regular", "Bueno", "MuyBueno"), ordered = TRUE)
   }
   }
 
 for (j in c(3,4,5)) {
-  Mazorca[[j]] <- round(Mazorca[[j]], digits = 1)
+  MZ[[j]] <- round(MZ[[j]], digits = 1)
 }
 
+   (MZ %>%
+   filter(ET == "I"))
 
-ResumenInicial <- function()
-{
-  Mazorca <- Mazorca %>%
-    filter(Proceso == "Inicial")
-  
-  glimpse(Mazorca)
-  summary(Mazorca)
-}
+   
+```
 
-ResumenInicial()
+
+## Analisis descriptivo
+
+
+```{r, message=FALSE, fig.width=25, fig.height=35}
+
+    MZ %>%
+    select(2:9) %>%
+    filter(ET == "I") %>%
+    skim()
+
+  MZ %>% 
+  select(2:9) %>%
+  ggpairs(., mapping = ggplot2::aes(colour = ET), 
+        lower = list(continuous = wrap("smooth", alpha = 0.3, size=0.1)))
 
 ```
+
+
+## Prueba de la mediana
+
+a)	Hipótesis
+
+H0: La mediana del largo de la mazorca después del uso del abono es la misma en ambos grupos de eficiencia.
+
+H1: La mediana del largo de la mazorca después del uso del abono es diferente en ambos grupos de eficiencia.
+
+b)	Nivel de significación
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 10%
+
+c)	Estadístico de prueba: Chi cuadrado
+
+```{r}
+Prueba_Mediana <- function()
+{
+
+  MZ <- MZ %>%
+    filter(ET == "F")
+  
+  Median.test(MZ$LA_MZ, MZ$EF,alpha=0.10)
+  qchisq(0.90,1)
+  
+}
+
+Prueba_Mediana()
+
+```
+
+
+d)	Decisión
+
+Con un p_valor menor al nivel de significancia (0.08275058 < 0.1) hay evidencia suficiente para rechazar la hipotesis nula.
+
+e)	Conclución
+
+Las medianas de las alturas de ambos grupos despues del abono son diferentes.
 
