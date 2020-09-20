@@ -56,6 +56,9 @@ library(GGally)
 library(skimr)
 library(DescTools)
 library(EnvStats)
+library(RVAideMemoire)
+library(vcd)
+library(psych)
 
 ```
 
@@ -549,4 +552,257 @@ Con un p valor mayor al nivel de significancia (0.9578 > 0.05) no existe evidenc
 
 El test no encuentra diferencias significativas entre los grupos de abono.
 
+## 9.2.5 Test de Cochran
 
+    a)	Hipótesis
+    
+H0: los seis abonos son igualmente efectivos 
+H1: los seis abonos no son igualmente efectivos 
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 10% 
+
+    c) Estadístico de prueba
+    
+```{r}
+
+Prueba_Cochran <- function() {
+  
+  MZ <- MZ %>%
+    filter(ET == "I")
+
+  EF <- c(MZ$EF)
+  GRUPO <- factor(rep(c(1:6), 6))
+  T_A <- factor(rep(1:6, each = 6))
+    
+  cochran.qtest(EF~GRUPO|T_A,alpha=0.01,p.method="fdr")
+  
+}
+
+Prueba_Cochran()
+
+```
+
+
+    d) Decisión
+
+Con un p_valor mayor al nivel de significancia (0.3724 > 0.1) se acepta la hipótesis nula
+
+    e) Conclusion
+
+los seis abonos son igualmente efectivos
+
+## 9.3 Medidas de asociacion no parametrica
+
+## 9.3.1 Test Ji Cuadrado para Homogeneidad e Independencia
+
+    a)	Hipótesis
+    
+H0: la eficiencia de los abonos es independiente de la calificacion 
+H1: la eficiencia de los abonos no es independiente de la calificacion 
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+
+    c) Estadístico de prueba
+    
+```{r, warning=FALSE}
+
+Prueba_Chi2 <- function() {
+  
+  MZ <- MZ %>%
+    filter(ET == "I")
+  
+  chisq.test(MZ$EF, MZ$CAL_FI)
+}
+
+Prueba_Chi2()
+
+```
+
+
+    d) Decisión
+
+Con un p_valor menor al nivel de significancia (1.914e-06 < 0.1) se rechaza la hipótesis nula
+
+    e) Conclusion
+
+La eficiencia de los abonos no es independiente de su clasificacion
+
+## 9.3.2 Coeficiente V de Cramer, coeficiente de contingencia de Pearson y Coeficiente Phi
+
+    a)	Hipótesis (V de Cramer)
+    
+H0: no existe asociacion entre la eficiencia de los abonos y su calificacion 
+H1: existe asociacion entre la eficiencia de los abonos y su calificacion 
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+
+    c) Estadístico de prueba
+    
+```{r, warning= FALSE}
+
+Prueba_VCramer <- function() {
+  
+  MZ <- MZ %>%
+    filter(ET == "I")
+  
+  cramer.test(MZ$EF, MZ$CAL_FI)
+}
+
+Prueba_VCramer()
+
+```
+
+
+    d) Decisión
+
+Con un p_valor menor al nivel de significancia (1.914e-06 < 0.1) se rechaza la hipótesis nula
+
+    e) Conclusion
+
+Existe asociacion entre la eficiencia de los abonos y su calificacion 
+
+    a)	Hipótesis (Contingencia Pearson)
+    
+H0: no existe asociacion entre la eficiencia de los abonos y su calificacion 
+H1: existe asociacion entre la eficiencia de los abonos y su calificacion 
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+
+    c) Estadístico de prueba
+    
+```{r}
+
+Prueba_ContPearson <- function() {
+  
+  MZ <- MZ %>%
+    filter(ET == "I")
+  
+  tabla <- table(MZ$EF, MZ$CAL_FI)
+  
+  assocstats(tabla)
+  
+}
+
+Prueba_ContPearson()
+
+```
+
+
+    d) Decisión
+
+Con un p_valor menor al nivel de significancia (1.9140e-06 < 0.1) se rechaza la hipótesis nula
+
+    e) Conclusion
+
+Existe asociacion entre la eficiencia de los abonos y su calificacion 
+
+    a)	Hipótesis (Coeficiente Phi)
+    
+H0: no existe relacion entre la etapa de la prueba y su calificacion de peso
+H1: existe relacion entre la etapa de la prueba y su calificacion de peso 
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+
+    c) Estadístico de prueba
+    
+```{r}
+
+Prueba_CoefPhi <- function() {
+ 
+  tabla <- table(MZ$ET, MZ$CA_PE)
+  
+  assocstats(tabla)
+  
+}
+
+Prueba_CoefPhi()
+
+```
+
+
+    d) Decisión
+
+Con un p_valor mayor al nivel de significancia (0.23765 > 0.1) se acepta la hipótesis nula
+
+    e) Conclusion
+
+No existe relacion entre la etapa de la prueba y su calificacion de peso
+
+## 9.3.3 Medidas de correlacion: Coeficiente Spearman
+
+    a)	Hipótesis
+    
+H0: no existe relacion entre el largo de la mazorca y su  peso
+H1: existe relacion directa entre el largo de la mazorca y su peso 
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+
+    c) Estadístico de prueba
+    
+```{r, warning=FALSE}
+
+Prueba_Spearman <- function() {
+  
+  MZ <- MZ %>%
+    filter(ET == "I")
+  
+  cor.test(MZ$LA_MZ, MZ$PE_MZ, method="spearman", alternative="g")
+  
+}
+
+Prueba_Spearman()
+
+```
+
+
+    d) Decisión
+
+Con un p_valor menor al nivel de significancia (0.04657 < 0.1) se acepta la hipótesis nula
+
+    e) Conclusion
+
+existe relacion directa entre el largo de la mazorca y su peso 
+
+## 10 Conclusiones
+
+* Las medianas de las alturas de ambos grupos despues del abono son diferentes.
+
+* La mediana del peso del grupo eficiente es igual a la mediana del peso del grupo no eficiente.
+
+* La dispersión del peso de las mazorcas expuestas al abono es igual a la dispersión al peso de las mazorcas no expuestas al abono.
+
+* La dispersión del peso de las mazorcas expuestas al abono es igual a la dispersión al peso de las mazorcas no expuestas al abono.
+
+* Al menos un abono produce una altura de plantas diferente a los demás.
+
+* Las comparaciones por pares no encuentran diferencias significativas entre todas las medianas.
+
+* La mediana del peso de las mazorcas expuestas al abono es diferente a la mediana del peso de las mazorcas no expuestas al abono.
+
+* La mediana del peso de la mazorca sin el uso del abono es diferente a la mediana del peso de la mazorca con el uso del abono.
+
+* El peso de la mazorca no ha cambiado después del uso del abono.
+
+* El test no encuentra diferencias significativas entre los grupos de abono.
+
+* Los seis abonos son igualmente efectivos.
+
+* La eficiencia de los abonos no es independiente de su clasificacion.
+
+* Existe asociacion entre la eficiencia de los abonos y su calificacion.
+
+* No existe relacion entre la etapa de la prueba y su calificacion de peso.
+
+* existe relacion directa entre el largo de la mazorca y su peso.
