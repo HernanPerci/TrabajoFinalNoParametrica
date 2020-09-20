@@ -1,29 +1,29 @@
 ---
-title: "Pruebas no parametricas aplicadas a un registro de mazorcas en el Peru"
+title: "1. Titulo : Pruebas no parametricas aplicadas a un registro de mazorcas en el Peru"
 author: Nuñez Palomino Hernan Perci - Lopez Vega Arturo Emerson - Valverde Shuan keyla
   Fiorela
 date: "18/9/2020"
 output: word_document
 ---
 
-## Objetivo
+## 2. Objetivo
 
 Aplicación de las pruebas no paramétricas en la agricultura en el Perú.
 
-## Descripción de la base de datos
+## 3. Descripción de la base de datos
 Se recogen informaciones sobre las plantas de maíz  producidas en un área de cultivo para realizar estudios sobre su producción y crecimiento.
 Se recopilo el tipo de abono, peso de la mazorca y altura de la mazorca con el fin de encontrar relaciones entre la producción con estas variables. 
 
-## Población
+## 4. Población
 La población son todas las plantas de maíz producida de un área de cultivo en el Perú
 
-## Muestra
+## 5. Muestra
 Es una muestra no probabilística.
 
-## Unidad de análisis
+## 6. Unidad de análisis
 Cada planta de maíz producida de un área de cultivo en el Perú
 
-## Variables y escalas de medición
+## 7. Variables y escalas de medición
 Variable           | Etiqueta                        | Escala  | Valores
 ------------------ | ------------------------------- | ------- | ----------------
 ID_MZ              | Identificacion de la mazorca    | nominal | .
@@ -54,6 +54,8 @@ library(agricolae)
 library(exactRankTests)
 library(GGally)
 library(skimr)
+library(DescTools)
+library(EnvStats)
 
 ```
 
@@ -92,7 +94,7 @@ for (j in c(3,4,5)) {
 ```
 
 
-## Analisis descriptivo
+## 8. Resultados descriptivos
 
 
 ```{r, message=FALSE, fig.width=25, fig.height=35}
@@ -109,28 +111,33 @@ for (j in c(3,4,5)) {
 
 ```
 
+## 9. Resultados de la Inferencia No parametrica
 
-## Prueba de la mediana
+## 9.1 Comparacion de dos o mas poblaciones independientes
 
-a)	Hipótesis
+## 9.1.1 Prueba de la mediana
+
+    a)	Hipótesis
 
 H0: La mediana del largo de la mazorca después del uso del abono es la misma en ambos grupos de eficiencia.
 
 H1: La mediana del largo de la mazorca después del uso del abono es diferente en ambos grupos de eficiencia.
 
-b)	Nivel de significación
+    b)	Nivel de significación
 
 Se va a contrastar la Hipótesis nula con un nivel de significación del 10%
 
-c)	Estadístico de prueba: Chi cuadrado
+    c)	Estadístico de prueba: Chi cuadrado
+
 
 ```{r}
+
 Prueba_Mediana <- function()
 {
 
   MZ <- MZ %>%
     filter(ET == "F")
-  
+
   Median.test(MZ$LA_MZ, MZ$EF,alpha=0.10)
   qchisq(0.90,1)
   
@@ -141,11 +148,405 @@ Prueba_Mediana()
 ```
 
 
-d)	Decisión
+    d)	Decisión
 
 Con un p_valor menor al nivel de significancia (0.08275058 < 0.1) hay evidencia suficiente para rechazar la hipotesis nula.
 
-e)	Conclución
+    e)	Conclusión
 
 Las medianas de las alturas de ambos grupos despues del abono son diferentes.
+
+
+## 9.1.2 Prueba de U Mann Whitney
+
+    a)	Hipótesis
+
+H0: La mediana del peso de la mazorca después del uso del abono es la misma en ambos grupos de eficiencia.
+
+H1: La mediana del peso de la mazorca después del uso del abono es mayor en el grupo eficiente
+
+    b)	Nivel de significación
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 10%
+
+    c)	Estadístico de prueba: W
+
+```{r}
+
+Prueba_MannWithney <- function()
+{ 
+  NE <- MZ %>%
+  filter(ET == "F", EF == "NE") %>%
+  select(PE_MZ)
+
+  E <- MZ %>%
+  filter(ET == "F", EF == "E") %>%
+  select(PE_MZ)
+
+NE <- c(NE$PE_MZ)
+E <- c(E$PE_MZ)
+  
+  wilcox.exact(E, NE, alternative = "l", paired = FALSE, conf.level = 0.9)
+  }
+
+Prueba_MannWithney()
+
+
+```
+
+
+    d)	Decisión
+
+Con un p_valor mayor al nivel de significancia (0.9835 > 0.1) no hay evidencia suficiente para rechazar la hipotesis nula.
+
+    e)	Conclusión
+
+La mediana del peso del grupo eficiente es igual a la mediana del peso del grupo no eficiente.
+
+## 9.1.3 PRUEBA DE MOOD
+
+    a) Hipótesis      
+
+H0:la dispersión del peso de las mazorcas expuestas al abono es igual a la dispersión del peso de las mazorcas no expuestas al abono
+
+H1: la dispersión del peso de las mazorcas expuestas al abono es diferente a la dispersión del peso de las mazorcas no expuestas al abono
+
+    b) Nivel de significación 
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+
+    c) Estadístico de prueba: Z
+
+```{r}
+
+Prueba_Mood <- function()
+{ 
+P_I <- MZ %>%
+  filter(ET == "I") %>%
+  select(PE_MZ)
+
+  P_F <- MZ %>%
+  filter(ET == "F") %>%
+  select(PE_MZ)
+
+P_I <- c(P_I$PE_MZ)
+P_F <- c(P_F$PE_MZ)
+  
+  mood.test(P_F, P_I,alternative = "two.sided")
+  }
+
+Prueba_Mood()
+
+```
+
+
+    d) Decisión
+
+Con un p_valor mayor al nivel de significancia (0.6841>0.05)no se rechaza la hipótesis nula
+
+    e) Conclusion
+
+la dispersión del peso de las mazorcas expuestas al abono es igual a la dispersión al peso de las mazorcas no expuestas al abono.
+
+
+## 9.1.4 PRUEBA DE MOSES
+
+    a)	Hipótesis     
+
+H0: la dispersión del peso de las mazorcas expuestas al abono es igual a la dispersión al peso de las mazorcas no expuestas al abono
+
+H1: la dispersión del peso de las mazorcas expuestas al abono es diferente a la dispersión al peso de las mazorcas no expuestas al abono    
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+
+    c)Estadístico de prueba
+
+```{r}
+
+Prueba_Moses <- function()
+{ 
+P_I <- MZ %>%
+  filter(ET == "I") %>%
+  select(PE_MZ)
+
+  P_F <- MZ %>%
+  filter(ET == "F") %>%
+  select(PE_MZ)
+
+P_I <- c(P_I$PE_MZ)
+P_F <- c(P_F$PE_MZ)
+  
+  MosesTest(P_F, P_I, alternative = "two.sided")
+  }
+
+Prueba_Moses()
+
+```
+
+
+    d) Decisión	
+
+Conclusión: Con un p_valor mayor al nivel de significancia (0.09434>0.05) no se rechaza la hipótesis nula
+
+    e) Conclusion
+
+la dispersión del peso de las mazorcas expuestas al abono es igual a la dispersión al peso de las mazorcas no expuestas al abono
+
+## 9.1.5 Test de Kruskal-Wallis
+
+    a)   Hipótesis
+
+H0: las medianas de las altura de las planta producida por cada abono son iguales (me1=me2=…=me6)
+
+H1: al menos la mediana de la altura de las plantas producidas por un abono es diferente 
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+
+    c) Estadístico de prueba: H
+
+```{r}
+
+Prueba_Kruskal <- function()
+{
+
+  MZ_I <- MZ %>%
+    filter(ET == "I")
+
+  kruskal.test(MZ_I$AL_MZ, MZ_I$T_A)
+  
+}
+
+Prueba_Kruskal()
+
+```
+
+
+    d) Decisión
+Con un p_valor menor al nivel de significancia (0.01071<0.05) se rechaza la hipótesis nula
+
+    e) Conclusion
+
+al menos un abono produce una altura de plantas diferente a los demás.
+
+## Test de comparaciones multiples
+
+    a)   Hipótesis
+
+H0: las medianas de las altura de las planta producida por cada abono son iguales (me1=me2=…=me6)
+
+H1: al menos la mediana de la altura de las plantas producidas por un abono es diferente 
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+
+    c) Estadístico de prueba: H
+
+```{r, warning=FALSE}
+
+Prueba_CompMult <- function()
+{
+
+  MZ <- MZ %>%
+    filter(ET == "I")
+
+  pairwise.wilcox.test(MZ$AL_MZ, MZ$T_A,p.adj = "bonf")
+}
+
+Prueba_CompMult()
+
+```
+
+
+    d) Conclusion
+
+Las comparaciones por pares no encuentran diferencias significativas entre todas las condiciones.
+
+## 9.2 Comparacion de dos o mas poblaciones independientes
+
+## 9.2.1 Test de Signos
+
+    a) Hipótesis      
+
+H0:la mediana del peso de las mazorcas expuestas al abono es igual a la mediana del peso de las mazorcas no expuestas al abono
+
+H1: la mediana del peso de las mazorcas expuestas al abono es diferente a la mediana del peso de las mazorcas no expuestas al abono
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+
+    c) Estadístico de prueba: R
+
+```{r}
+
+
+Prueba_Signos <- function()
+{ 
+  P_I <- MZ %>%
+  filter(ET == "I") %>%
+  select(PE_MZ)
+
+  P_F <- MZ %>%
+  filter(ET == "F") %>%
+  select(PE_MZ)
+
+P_I <- c(P_I$PE_MZ)
+P_F <- c(P_F$PE_MZ)
+  
+  signTest(P_F, P_I, alternative = "two.sided", conf.level = 0.95, paired = TRUE)
+  
+  }
+
+Prueba_Signos()
+
+
+```
+
+
+    d) Decisión
+
+Con un p_valor menor al nivel de significancia (0.00001<0.05) se rechaza la hipótesis nula
+
+    e) Conclusion
+
+la mediana del peso de las mazorcas expuestas al abono es diferente a la mediana del peso de las mazorcas no expuestas al abono.
+
+## 9.2.2 Test de Wilcoxon
+
+    a) Hipótesis 
+
+H0: la mediana del peso de la mazorca sin el uso del abono es igual a la mediana del peso de la mazorca con el uso del abono.
+
+H1: la mediana del peso de la mazorca sin el uso del abono es diferente a la mediana del peso de la mazorca con el uso del abono.
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+
+    c) Estadístico de prueba: V
+
+
+```{r}
+
+Prueba_Wilcoxon <- function()
+{ 
+
+  P_I <- MZ %>%
+  filter(ET == "I") %>%
+  select(PE_MZ)
+
+  P_F <- MZ %>%
+  filter(ET == "F") %>%
+  select(PE_MZ)
+
+P_I <- c(P_I$PE_MZ)
+P_F <- c(P_F$PE_MZ)
+  
+  wilcox.exact(P_F, P_I, alternative = "t", paired = TRUE, conf.level = 0.9)
+  }
+
+Prueba_Wilcoxon()
+
+```
+
+
+    d) Decisión:
+
+Con un p_valor menor al nivel de significancia (6.665e-08 < 0.05)  se rechaza la hipótesis nula
+
+    e) Conclusion:
+
+la mediana del peso de la mazorca sin el uso del abono es diferente a la mediana del peso de la mazorca con el uso del abono.
+
+## 9.2.3 Test de Mc Nemar
+
+    a)Hipótesis      
+
+H0: el peso de la mazorca no ha cambiado después del uso del abono.
+H1: el peso de la mazorca si ha cambiado después del uso del abono.
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+    
+    c) Estadístico de prueba : chi cuadrado
+
+
+```{r}
+
+Prueba_McNemar <- function()
+{ 
+
+  CP_I <- MZ %>%
+  filter(ET == "I") %>%
+  select(CA_PE)
+
+  CP_F <- MZ %>%
+  filter(ET == "F") %>%
+  select(CA_PE)
+
+  CP_I <- c(CP_I$CA_PE)
+  CP_F <- c(CP_F$CA_PE)
+
+  mcnemar.test(CP_F, CP_I)
+  }
+
+Prueba_McNemar()
+
+
+```
+
+
+    d) Decisión
+
+Con un p_valor mayor al nivel de significancia (0.3017>0.05) no se rechaza la hipótesis nula
+
+    e) Conclusion
+    
+el peso de la mazorca no ha cambiado después del uso del abono.
+
+## 9.2.4 Test de Friedman
+
+    a) Hipótesis 
+
+H0: los seis abonos son igualmente significativas.
+H1: los seis  abonos no son igualmente significativas.
+
+    b) Nivel de significación 
+
+Se va a contrastar la Hipótesis nula con un nivel de significación del 5% 
+
+    c) Estadístico de prueba
+
+```{r}
+
+Prueba_Friedman <- function() {
+  
+  MZ <- MZ %>%
+    filter(ET == "I")
+
+  CAL_FI <- c(MZ$CAL_FI)
+  GRUPO <- factor(rep(c(1:6), 6))
+  T_A <- factor(rep(1:6, each = 6))
+    
+  friedman.test(CAL_FI, GRUPO, T_A)
+  
+}
+
+Prueba_Friedman()
+
+```
+
+    d) Decisión
+
+Con un p valor mayor al nivel de significancia (0.9578 > 0.05) no existe evidencia suficiente para rechazar la hipotesis nula.
+
+    d) Conclusion
+
+El test no encuentra diferencias significativas entre los grupos de abono.
+
 
