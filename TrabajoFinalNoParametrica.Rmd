@@ -769,7 +769,7 @@ Prueba_Spearman()
 
     d) Decisión
 
-Con un p_valor menor al nivel de significancia (0.04657 < 0.1) se acepta la hipótesis nula
+Con un p_valor menor al nivel de significancia (0.04657 < 0.1) se rechaza la hipótesis nula
 
     e) Conclusion
 
