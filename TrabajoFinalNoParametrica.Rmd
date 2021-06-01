@@ -1,7 +1,6 @@
 ---
 title: "1. Titulo : Pruebas no parametricas aplicadas a un registro de mazorcas en el Peru"
-author: Nuñez Palomino Hernan Perci - Lopez Vega Arturo Emerson - Valverde Shuan keyla
-  Fiorela
+author: Nuñez Palomino Hernan Perci
 date: "18/9/2020"
 output: word_document
 ---
@@ -806,3 +805,6 @@ existe relacion directa entre el largo de la mazorca y su peso
 * No existe relacion entre la etapa de la prueba y su calificacion de peso.
 
 * existe relacion directa entre el largo de la mazorca y su peso.
+
+
+
